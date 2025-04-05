@@ -7,8 +7,20 @@ const Catalog = ({ products, onProductClick, browsingHistory }) => {
   
   return (
     <div className="catalog-container">
-      {/* Implement product catalog display here */}
-      <p>Implement product catalog display here</p>
+      <div className="product-grid">
+        {products.map(product => (
+          <div 
+            key={product.id} 
+            className={`product-card ${browsingHistory.includes(product.id) ? 'viewed' : ''}`}
+            onClick={() => onProductClick(product.id)}
+          >
+            <h4>{product.name}</h4>
+            <p>{product.category}</p>
+            <p>${product.price}</p>
+            <p>Brand: {product.brand}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
