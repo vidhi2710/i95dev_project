@@ -12,10 +12,15 @@ const Recommendations = ({ recommendations, isLoading }) => {
       {isLoading ? (
         <p>Loading recommendations...</p>
       ) : recommendations.length > 0 ? (
-        <div>
-          {/* Implement recommendations display here */}
-          <p>Implement recommendations display here</p>
-        </div>
+        <ul className="recommendations-list">
+          {recommendations.map((rec, index) => (
+            <li key={index} className="recommendation-item">
+              <strong>{rec.product.name}</strong> - {rec.product.category} - ${rec.product.price}<br />
+              <em>{rec.explanation}</em> <br />
+              Confidence Score: {rec.confidence_score}/10
+            </li>
+          ))}
+        </ul>
       ) : (
         <p>No recommendations yet. Set your preferences and browse some products!</p>
       )}
