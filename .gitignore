@@ -172,3 +172,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Ignore node_modules in frontend folder
+frontend/node_modules/
+
+# Ignore node_modules in any folder globally
+node_modules/

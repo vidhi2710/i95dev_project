@@ -65,10 +65,20 @@ function App() {
       </header>
 
       <div className="tab-nav">
-        <button onClick={() => setActiveTab('catalog')}>Catalog</button>
-        <button onClick={() => setActiveTab('preferences')}>Preferences</button>
-        <button onClick={() => setActiveTab('history')}>History</button>
-        <button onClick={() => setActiveTab('recommendations')}>Recommendations</button>
+      {[
+    { key: 'catalog', label: 'Catalog' },
+    { key: 'preferences', label: 'Preferences' },
+    { key: 'history', label: 'History' },
+    { key: 'recommendations', label: 'Recommendations' },
+  ].map(({ key, label }) => (
+    <button
+      key={key}
+      className={activeTab === key ? 'active' : ''}
+      onClick={() => setActiveTab(key)}
+    >
+      {label}
+    </button>
+  ))}
       </div>
 
       <div className="tab-content">

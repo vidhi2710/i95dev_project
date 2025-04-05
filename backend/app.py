@@ -67,6 +67,19 @@ async def get_recommendations(request: RecommendationRequest):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/api/products/{product_id}")
+async def get_product_by_id(product_id: str):
+    """
+    Return product details by ID
+    """
+    try:
+        product = product_service.get_product_by_id(product_id)
+        if product:
+            return product
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 # Custom exception handler for more user-friendly error messages
 @app.exception_handler(Exception)
