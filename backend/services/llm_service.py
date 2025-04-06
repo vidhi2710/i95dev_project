@@ -1,5 +1,6 @@
 import openai
 from config import config
+import logging
 
 class LLMService:
     """
@@ -14,6 +15,11 @@ class LLMService:
         self.model_name = config['MODEL_NAME']
         self.max_tokens = config['MAX_TOKENS']
         self.temperature = config['TEMPERATURE']
+
+    def _estimate_token_count(self, prompt):
+        # Rough estimation: 1 token ≈ 4 characters
+        return len(prompt) // 4
+
     
     def generate_recommendations(self, user_preferences, browsing_history, all_products):
         """
@@ -44,6 +50,9 @@ class LLMService:
         
         # Call the LLM API
         try:
+            if self._estimate_token_count(prompt) > self.max_tokens:
+                print("Prompt too long for max_tokens. Consider filtering catalog or shortening description.")
+
             response = openai.ChatCompletion.create(
                 model=self.model_name,
                 messages=[
@@ -53,7 +62,8 @@ class LLMService:
                 max_tokens=self.max_tokens,
                 temperature=self.temperature
             )
-            
+            print("Raw LLM Response:", response.choices[0].message.content)
+
             # Parse the LLM response to extract recommendations
             # IMPLEMENT YOUR RESPONSE PARSING LOGIC HERE
             recommendations = self._parse_recommendation_response(response.choices[0].message.content, all_products)
@@ -103,70 +113,86 @@ class LLMService:
         # THIS FUNCTION MUST BE IMPLEMENTED BY THE CANDIDATE
 
         prompt = (
-        "You are a product recommendation expert for an eCommerce store.\n"
-        "A user has specified some preferences and has browsed a few products.\n"
-        "Your job is to recommend 5 products from the catalog, giving clear reasoning and a confidence score (1-10).\n\n"
+        "You are an expert product recommendation engine for an eCommerce platform.\n"
+        "Your task is to recommend 5 personalized products based on:\n"
+        "1. User's preferences\n"
+        "2. Products they recently browsed\n"
+        "3. The product catalog\n\n"
         )
 
+        # Add user preferences to the prompt
         prompt += "User Preferences:\n"
         for key, value in user_preferences.items():
             prompt += f"- {key.capitalize()}: {value}\n"
 
+        # Add browsing history to the prompt
+        prompt += "\nBrowsing History:\n"
         if browsed_products:
-            prompt += "\nBrowsing History:\n"
             for product in browsed_products:
-                prompt += f"- {product['name']} | Category: {product['category']}, Price: ${product['price']}, Brand: {product['brand']}\n"
+                features_str = ", ".join(product.get("features", []))
+                tags_str = ", ".join(product.get("tags", []))
+                prompt += (
+                    f"- Name: {product['name']}\n"
+                    f"  Brand: {product['brand']}\n"
+                    f"  Category: {product['category']} > {product.get('subcategory', '')}\n"
+                    f"  Price: ${product['price']}\n"
+                    f"  Description: {product['description']}\n"
+                    f"  Features: {features_str}\n"
+                    f"  Tags: {tags_str}\n"
+                    f"  Rating: {product['rating']}\n\n"
+                )
         else:
-            prompt += "\nBrowsing History: None\n"
+            prompt += "- None\n"
 
-    # Only include relevant products (filtered down to prevent token overload)
-        filtered_products = [
-            p for p in all_products
-            if (not user_preferences.get("categories") or p["category"] in user_preferences["categories"]) and
-                (not user_preferences.get("brands") or p["brand"] in user_preferences["brands"])
-        ][:20]  # limit to 20 to stay within token limits
+        # Filter catalog down to 20 relevant products
+        filtered_products = []
+        for p in all_products:
+            if user_preferences.get("categories") and p["category"] not in user_preferences["categories"]:
+                continue
+            if user_preferences.get("brands") and p["brand"] not in user_preferences["brands"]:
+                continue
+            if user_preferences.get("priceRange") and user_preferences["priceRange"] != "all":
+                try:
+                    min_price, max_price = map(float, user_preferences["priceRange"].split("-"))
+                    if not (min_price <= float(p["price"]) <= max_price):
+                        continue
+                except Exception:
+                    pass  # Ignore malformed price range
+            filtered_products.append(p)
+            if len(filtered_products) >= 20:
+                break
 
-        prompt += "\nProduct Catalog:\n"
+
+        prompt += "Product Catalog (Sample of 20):\n"
         for product in filtered_products:
-            prompt += f"- ID: {product['id']}, Name: {product['name']}, Category: {product['category']}, Price: ${product['price']}, Brand: {product['brand']}\n"
+            prompt += (
+                f"- ID: {product['id']}, Name: {product['name']}, Category: {product['category']}, "
+                f"Brand: {product['brand']}, Price: ${product['price']}\n"
+            )
 
         prompt += (
-            "\nBased on the above, recommend 5 products. Format your response as JSON like:\n"
+            "\nPlease recommend 5 products from the catalog that align well with the user's preferences and interests.\n"
+            "Each recommendation must include:\n"
+            "- product_id (from catalog)\n"
+            "- explanation (why it suits the user)\n"
+            "- score (confidence score out of 10)\n\n"
+            "Respond in the following JSON format:\n"
             "[\n"
             "  {\n"
-            "    \"product_id\": \"123\",\n"
-            "    \"explanation\": \"Great fit for the user's interest in electronics and budget.\",\n"
+            "    \"product_id\": \"prod001\",\n"
+            "    \"explanation\": \"This product matches the user's interest in lightweight athletic footwear.\",\n"
             "    \"score\": 9\n"
             "  },\n"
             "  ...\n"
             "]"
         )
-        
-        # Example basic prompt structure (you should significantly improve this):
-        # prompt = "Based on the following user preferences and browsing history, recommend 5 products from the catalog with explanations.\n\n"
-        
-        # # Add user preferences to the prompt
-        # prompt += "User Preferences:\n"
-        # for key, value in user_preferences.items():
-        #     prompt += f"- {key}: {value}\n"
-        
-        # # Add browsing history to the prompt
-        # prompt += "\nBrowsing History:\n"
-        # for product in browsed_products:
-        #     prompt += f"- {product['name']} (Category: {product['category']}, Price: ${product['price']})\n"
-        
-        # # Add instructions for the response format
-        # prompt += "\nPlease recommend 5 products from the catalog that match the user's preferences and browsing history. For each recommendation, provide the product ID, name, and a brief explanation of why you're recommending it.\n"
-        
-        # # Add response format instructions
-        # prompt += "\nFormat your response as a JSON array with objects containing 'product_id', 'explanation', and 'score' (1-10 indicating confidence)."
-        
+
         # You would likely want to include the product catalog in the prompt
         # But be careful about token limits!
         # For a real implementation, you might need to filter the catalog to relevant products first
-        
         return prompt
     
+        
     def _parse_recommendation_response(self, llm_response, all_products):
         """
         Parse the LLM response to extract product recommendations
@@ -222,54 +248,5 @@ class LLMService:
             print(f"Error parsing LLM response: {str(e)}")
             return {"recommendations": [], "error": f"Failed to parse recommendations: {str(e)}"}
         
-        # # Example implementation (very basic, should be improved):
-        # try:
-        #     import json
-        #     # Attempt to parse JSON from the response
-        #     # Note: This is a simplistic approach and should be made more robust
-        #     # The candidate should implement better parsing logic
-            
-        #     # Find JSON content in the response
-        #     start_idx = llm_response.find('[')
-        #     end_idx = llm_response.rfind(']') + 1
-            
-        #     if start_idx == -1 or end_idx == 0:
-        #         # Fallback if JSON parsing fails
-        #         return {
-        #             "recommendations": [],
-        #             "error": "Could not parse recommendations from LLM response"
-        #         }
-            
-        #     json_str = llm_response[start_idx:end_idx]
-        #     rec_data = json.loads(json_str)
-            
-        #     # Enrich recommendations with full product details
-        #     recommendations = []
-        #     for rec in rec_data:
-        #         product_id = rec.get('product_id')
-        #         product_details = None
-                
-        #         # Find the full product details
-        #         for product in all_products:
-        #             if product['id'] == product_id:
-        #                 product_details = product
-        #                 break
-                
-        #         if product_details:
-        #             recommendations.append({
-        #                 "product": product_details,
-        #                 "explanation": rec.get('explanation', ''),
-        #                 "confidence_score": rec.get('score', 5)
-        #             })
-            
-        #     return {
-        #         "recommendations": recommendations,
-        #         "count": len(recommendations)
-        #     }
-            
-        # except Exception as e:
-        #     print(f"Error parsing LLM response: {str(e)}")
-        #     return {
-        #         "recommendations": [],
-        #         "error": f"Failed to parse recommendations: {str(e)}"
-        #     }
+
+        

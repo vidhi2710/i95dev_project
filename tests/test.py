@@ -183,6 +183,130 @@ def test_prompt_engineering_adaptation():
         return True, None
     except Exception as e:
         return False, str(e)
+    
+def test_empty_preferences_and_history():
+    """Test that the system handles empty preferences and history gracefully"""
+    try:
+        payload = {
+            "preferences": {
+                "priceRange": "all",
+                "categories": [],
+                "brands": []
+            },
+            "browsing_history": []
+        }
+        response = requests.post(f"{API_BASE_URL}/recommendations", json=payload)
+        data = response.json()
+
+        if response.status_code != 200:
+            return False, "Expected 200 OK for empty inputs"
+
+        if not data.get("recommendations"):
+            return False, "Expected fallback/default recommendations for empty input"
+
+        return True, None
+    except Exception as e:
+        return False, str(e)
+
+# def test_brand_specific_recommendations():
+#     """Test that brand preferences are respected in recommendations"""
+#     try:
+#         expected_brand = "TechMax"
+#         payload = {
+#             "preferences": {
+#                 "priceRange": "all",
+#                 "categories": [],
+#                 "brands": [expected_brand]
+#             },
+#             "browsing_history": []
+#         }
+#         response = requests.post(f"{API_BASE_URL}/recommendations", json=payload)
+#         data = response.json()
+#         recommendations = data.get("recommendations", [])
+
+#         incorrect = []
+#         for rec in recommendations[:5]:
+#             brand = rec.get("product", {}).get("brand")
+#             if brand != expected_brand:
+#                 incorrect.append(brand)
+
+#         if incorrect:
+#             return False, f"Expected only '{expected_brand}' but got: {incorrect}"
+
+#         return True, None
+#     except Exception as e:
+#         return False, str(e)
+
+    
+def test_price_range_filtering():
+    """Test that price range filtering is correctly applied"""
+    try:
+        payload = {
+            "preferences": {
+                "priceRange": "low",
+                "categories": [],
+                "brands": []
+            },
+            "browsing_history": []
+        }
+        response = requests.post(f"{API_BASE_URL}/recommendations", json=payload)
+        data = response.json()
+
+        for rec in data.get("recommendations", [])[:3]:
+            price = rec.get("product", {}).get("price", 0)
+            if price > 50:
+                return False, f"Expected product in low price range, got price: {price}"
+
+        return True, None
+    except Exception as e:
+        return False, str(e)
+    
+def test_explanation_token_budget():
+    """Test that the LLM explanation is concise and respects token budget"""
+    try:
+        payload = {
+            "preferences": {
+                "priceRange": "all",
+                "categories": ["Electronics"],
+                "brands": []
+            },
+            "browsing_history": ["prod002"]
+        }
+        response = requests.post(f"{API_BASE_URL}/recommendations", json=payload)
+        data = response.json()
+
+        for rec in data.get("recommendations", []):
+            explanation = rec.get("explanation", "")
+            if len(explanation.split()) > 60:
+                return False, "Explanation too long, may exceed token budget"
+
+        return True, None
+    except Exception as e:
+        return False, str(e)
+
+def test_diversity_of_recommendations():
+    """Test that recommendations are not all the same and provide variety"""
+    try:
+        payload = {
+            "preferences": {
+                "priceRange": "all",
+                "categories": ["Electronics"],
+                "brands": []
+            },
+            "browsing_history": ["prod002", "prod007"]
+        }
+        response = requests.post(f"{API_BASE_URL}/recommendations", json=payload)
+        data = response.json()
+        product_ids = [rec.get("product", {}).get("id") for rec in data.get("recommendations", [])]
+
+        if len(set(product_ids)) < len(product_ids) / 2:
+            return False, "Low diversity in recommended products"
+
+        return True, None
+    except Exception as e:
+        return False, str(e)
+
+
 
 def main():
     print_header("AI-Powered Product Recommendation Engine - Self-Evaluation Test")
@@ -212,6 +336,22 @@ def main():
     # Test prompt engineering adaptation
     prompt_adapt_result, prompt_adapt_message = test_prompt_engineering_adaptation()
     print_result("Prompt Engineering Adaptation", prompt_adapt_result, prompt_adapt_message)
+
+    # Additional tests
+    ep_result, ep_msg = test_empty_preferences_and_history()
+    print_result("Empty Preferences & History", ep_result, ep_msg)
+
+    # brand_result, brand_msg = test_brand_specific_recommendations()
+    # print_result("Brand-Specific Recommendations", brand_result, brand_msg)
+
+    price_result, price_msg = test_price_range_filtering()
+    print_result("Price Range Filtering", price_result, price_msg)
+
+    token_result, token_msg = test_explanation_token_budget()
+    print_result("LLM Explanation Token Budget", token_result, token_msg)
+
+    diversity_result, diversity_msg = test_diversity_of_recommendations()
+    print_result("Product Diversity", diversity_result, diversity_msg)
     
     # Summary
     print("\n" + "-"*80)
@@ -220,9 +360,13 @@ def main():
         products_result, 
         rec_structure_result, 
         rec_quality_result,
-        prompt_adapt_result
+        prompt_adapt_result,
+        ep_result,
+        price_result,
+        token_result,
+        diversity_result
     ])
-    total_tests = 5
+    total_tests = 9
     
     print(f"Tests passed: {tests_passed}/{total_tests} ({tests_passed/total_tests*100:.0f}%)")
     

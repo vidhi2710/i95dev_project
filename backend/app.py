@@ -77,8 +77,10 @@ async def get_product_by_id(product_id: str):
         product = product_service.get_product_by_id(product_id)
         if product:
             return product
+        else:
+            raise HTTPException(status_code=404, detail="Product not found")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=404, detail=f"Product with ID '{product_id}' not found.")
 
 
 # Custom exception handler for more user-friendly error messages
