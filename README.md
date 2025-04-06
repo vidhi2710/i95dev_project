@@ -18,8 +18,48 @@ An intelligent product recommendation system that leverages user preferences, br
 
 ## 📁 Project Structure
 
-├── backend/ │ ├── llm_service.py # Core logic for LLM prompting │ ├── main.py # FastAPI app for recommendations │ └── test_candidate.py # End-to-end and unit test coverage ├── frontend/ │ ├── src/ │ │ ├── App.js # Main stateful container │ │ ├── components/ │ │ │ ├── Catalog.js │ │ │ ├── UserPreferences.js │ │ │ ├── BrowsingHistory.js │ │ │ ├── Recommendations.js │ │ │ └── ProductModal.js │ │ └── index.css # Styling ├── data/ │ └── products.json # Product catalog (sample data) ├── README.md └── requirements.txt
 
+```
+backend/
+│
+├── app.py               # Main FastAPI application
+├── requirements.txt     # Python dependencies
+├── config.py            # Configuration (add your API keys here)
+├── data/
+│   └── products.json    # Sample product catalog
+│
+├── services/
+│   ├── __init__.py
+│   ├── llm_service.py   # Service for LLM interactions (implement this)
+│   └── product_service.py  # Service for product data operations
+│
+└── README.md 
+```
+
+```
+frontend/
+│
+├── public/
+│   └── index.html
+│
+├── src/
+│   ├── App.js           # Main application component
+│   ├── index.js         # Entry point
+│   ├── components/
+│   │   ├── Catalog.js   # Product catalog display (implement this)
+│   │   ├── UserPreferences.js  # Preference form (implement this)
+│   │   ├── Recommendations.js  # Recommendations display (implement this)
+│   │   └── BrowsingHistory.js  # Browsing history component (implement this)
+│   │
+│   ├── services/
+│   │   └── api.js       # API client for backend communication
+│   │
+│   └── styles/
+│       └── App.css      # Styling
+│
+├── package.json         # NPM dependencies
+└── README.md        
+```
 
 ---
 
@@ -35,6 +75,15 @@ An intelligent product recommendation system that leverages user preferences, br
 
 ### Backend Setup
 
+Create a `.env` file in the backend directory with your OpenAI API key:
+   ```
+   OPENAI_API_KEY=your_openai_api_key_here
+   MODEL_NAME=gpt-3.5-turbo
+   MAX_TOKENS=1000
+   TEMPERATURE=0.7
+   DATA_PATH=data/products.json
+   ```
+
 ```bash
 cd backend
 pip install -r requirements.txt
@@ -47,7 +96,7 @@ cd frontend
 npm install
 npm start
 ```
-Frontend runs at http://localhost:3000, backend at http://localhost:8000.
+Frontend runs at http://localhost:3000, backend at http://localhost:5000.
 
 ## 🧠 Prompt Engineering Approach
 LLM recommendations are generated via OpenAI GPT API based on user preferences and browsing history.
