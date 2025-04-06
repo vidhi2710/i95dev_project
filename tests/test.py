@@ -207,36 +207,6 @@ def test_empty_preferences_and_history():
         return True, None
     except Exception as e:
         return False, str(e)
-
-# def test_brand_specific_recommendations():
-#     """Test that brand preferences are respected in recommendations"""
-#     try:
-#         expected_brand = "TechMax"
-#         payload = {
-#             "preferences": {
-#                 "priceRange": "all",
-#                 "categories": [],
-#                 "brands": [expected_brand]
-#             },
-#             "browsing_history": []
-#         }
-#         response = requests.post(f"{API_BASE_URL}/recommendations", json=payload)
-#         data = response.json()
-#         recommendations = data.get("recommendations", [])
-
-#         incorrect = []
-#         for rec in recommendations[:5]:
-#             brand = rec.get("product", {}).get("brand")
-#             if brand != expected_brand:
-#                 incorrect.append(brand)
-
-#         if incorrect:
-#             return False, f"Expected only '{expected_brand}' but got: {incorrect}"
-
-#         return True, None
-#     except Exception as e:
-#         return False, str(e)
-
     
 def test_price_range_filtering():
     """Test that price range filtering is correctly applied"""
@@ -340,9 +310,6 @@ def main():
     # Additional tests
     ep_result, ep_msg = test_empty_preferences_and_history()
     print_result("Empty Preferences & History", ep_result, ep_msg)
-
-    # brand_result, brand_msg = test_brand_specific_recommendations()
-    # print_result("Brand-Specific Recommendations", brand_result, brand_msg)
 
     price_result, price_msg = test_price_range_filtering()
     print_result("Price Range Filtering", price_result, price_msg)

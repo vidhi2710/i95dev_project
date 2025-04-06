@@ -83,31 +83,7 @@
   .preferences-container input[type="checkbox"] {
     transform: scale(1.1);
   }
-  .product-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 16px;
-  }
   
-  .product-card {
-    background-color: #fff;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-  }
-  
-  .product-card:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transform: scale(1.02);
-  }
-  
-  .product-card.viewed {
-    opacity: 0.7;
-    border-color: #4a90e2;
-  }
   .history-container ul {
     list-style: none;
     padding-left: 0;
@@ -215,66 +191,6 @@
     border-radius: 8px;
   }
 
-  /* .product-card {
-    background-color: #ffffff;
-    border-radius: 16px;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-    cursor: pointer;
-    position: relative;
-    padding: 20px;
-    text-align: left;
-  }
-  
-  .product-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-  }
-  
-  .product-card.viewed {
-    border: 2px solid #4a90e2;
-  }
-  
-  .viewed-badge {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    background-color: #4a90e2;
-    color: white;
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 12px;
-  }
-  
-  .product-info {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  
-  .product-name {
-    font-size: 18px;
-    font-weight: 600;
-    color: #222;
-  }
-  
-  .product-category {
-    font-size: 14px;
-    color: #666;
-  }
-  
-  .product-price {
-    font-size: 16px;
-    color: #4a90e2;
-    font-weight: bold;
-  }
-  
-  .product-brand {
-    font-size: 13px;
-    color: #444;
-  }
-   */
  /* Catalog grid styling */
 .product-grid {
   display: grid;
@@ -473,8 +389,22 @@
   border: 2px solid #ccc;
 }
 
+.preference-toggle-btn {
+  margin-top: 8px;
+  background: none;
+  border: none;
+  color: #4a90e2;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.preference-toggle-btn:hover {
+  color: #357ae8;
+}
+
   
-            
-  
+          
   /* You'll need to add more styling as you implement the components */
 

@@ -77,29 +77,6 @@ const Catalog = ({ products, onProductClick, browsingHistory }) => {
        <ProductModal product={selectedProduct} onClose={closeModal} />
      )}
    </div>
-  
-  // return (
-  //   <div className="catalog-container">
-  //     <div className="product-grid">
-  //       {products.map(product => (
-  //         <div
-  //           key={product.id}
-  //           className={`product-card ${browsingHistory.includes(product.id) ? 'viewed' : ''}`}
-  //           onClick={() => onProductClick(product.id)}
-  //         >
-  //           {browsingHistory.includes(product.id) && (
-  //             <span className="viewed-badge">Viewed</span>
-  //           )}
-  //           <div className="product-info">
-  //             <h3 className="product-name">{product.name}</h3>
-  //             <p className="product-category">{product.category}</p>
-  //             <p className="product-price">${product.price}</p>
-  //             <p className="product-brand">Brand: {product.brand}</p>
-  //           </div>
-  //         </div>
-  //       ))}
-  //     </div>
-  //   </div>
   );
 };
 
